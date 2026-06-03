@@ -6,7 +6,7 @@ local ImGuiLib = {}
 
 function ImGuiLib:CreateWindow(config)
     local title = config.Title or "ImGui Menu"
-    local size = config.Size or Vector2.new(350, 450)
+    local size = config.Size or Vector2.new(350, 420)
     
     local ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "CustomImGui_Lib"
@@ -333,8 +333,10 @@ function ImGuiLib:CreateWindow(config)
 
         function HeaderObj:CreateKeybind(kConfig)
             local currentKey = kConfig.Default or Enum.KeyCode.E
+            local mode = kConfig.Mode or "Toggle"
             local callback = kConfig.Callback or function() end
             local listening = false
+            local isToggled = false
             
             local BindFrame = Instance.new("Frame")
             BindFrame.Size = UDim2.new(1, 0, 0, 22)
@@ -378,89 +380,21 @@ function ImGuiLib:CreateWindow(config)
                     BindBtn.Text = "[" .. currentKey.Name .. "]"
                     BindBtn.TextColor3 = Color3.fromRGB(30, 150, 255)
                 elseif not listening and input.KeyCode == currentKey then
-                    callback()
+                    if mode == "Toggle" then
+                        isToggled = not isToggled
+                        callback(isToggled)
+                    elseif mode == "Hold" then
+                        callback(true)
+                    end
                 end
             end)
-        end
-
-        function HeaderObj:CreateMultiDropdown(mdConfig)
-            local options = mdConfig.Options or {}
-            local selections = mdConfig.Default or {}
-            local callback = mdConfig.Callback or function() end
             
-            local MDFram = Instance.new("Frame")
-            MDFram.Size = UDim2.new(1, 0, 0, 36)
-            MDFram.BackgroundTransparency = 1
-            MDFram.Parent = Container
-            
-            local Label = Instance.new("TextLabel")
-            Label.Size = UDim2.new(1, -10, 0, 14)
-            Label.Position = UDim2.new(0, 5, 0, 0)
-            Label.BackgroundTransparency = 1
-            Label.Text = mdConfig.Name
-            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
-            Label.Font = Enum.Font.Code
-            Label.TextSize = 11
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Parent = MDFram
-            
-            local SelectBox = Instance.new("TextButton")
-            SelectBox.Size = UDim2.new(1, -15, 0, 18)
-            SelectBox.Position = UDim2.new(0, 5, 0, 15)
-            SelectBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-            SelectBox.BorderSizePixel = 1
-            SelectBox.BorderColor3 = Color3.fromRGB(65, 65, 65)
-            SelectBox.Text = "  Select Multiple...  ▼"
-            SelectBox.TextColor3 = Color3.fromRGB(160, 160, 160)
-            SelectBox.Font = Enum.Font.Code
-            SelectBox.TextSize = 11
-            SelectBox.TextXAlignment = Enum.TextXAlignment.Left
-            SelectBox.ZIndex = 4
-            SelectBox.Parent = MDFram
-            
-            local OptionsList = Instance.new("Frame")
-            OptionsList.Size = UDim2.new(1, 0, 0, 0)
-            OptionsList.Position = UDim2.new(0, 0, 1, 1)
-            OptionsList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-            OptionsList.BorderSizePixel = 1
-            OptionsList.BorderColor3 = Color3.fromRGB(65, 65, 65)
-            OptionsList.Visible = false
-            OptionsList.ZIndex = 5
-            OptionsList.Parent = SelectBox
-            
-            local ListLayout = Instance.new("UIListLayout")
-            ListLayout.Parent = OptionsList
-            
-            local isOpen = false
-            SelectBox.MouseButton1Click:Connect(function()
-                isOpen = not isOpen
-                OptionsList.Visible = isOpen
-                OptionsList.Size = isOpen and UDim2.new(1, 0, 0, #options * 18) or UDim2.new(1, 0, 0, 0)
+            UserInputService.InputEnded:Connect(function(input, gpe)
+                if gpe then return end
+                if not listening and mode == "Hold" and input.KeyCode == currentKey then
+                    callback(false)
+                end
             end)
-            
-            for _, optName in ipairs(options) do
-                local active = selections[optName] or false
-                
-                local OptButton = Instance.new("TextButton")
-                OptButton.Size = UDim2.new(1, 0, 0, 18)
-                OptButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-                OptButton.BorderSizePixel = 0
-                OptButton.Text = (active and "  [X] " or "  [ ] ") .. optName
-                OptButton.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
-                OptButton.Font = Enum.Font.Code
-                OptButton.TextSize = 11
-                OptButton.TextXAlignment = Enum.TextXAlignment.Left
-                OptButton.ZIndex = 6
-                OptButton.Parent = OptionsList
-                
-                OptButton.MouseButton1Click:Connect(function()
-                    active = not active
-                    selections[optName] = active
-                    OptButton.Text = (active and "  [X] " or "  [ ] ") .. optName
-                    OptButton.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
-                    callback(selections)
-                end)
-            end
         end
 
         function HeaderObj:CreateParagraph(pConfig)
