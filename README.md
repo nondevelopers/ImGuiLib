@@ -2,21 +2,19 @@
 
 ## Installation
 ```lua
-local ImGuiLib = loadstring(game:HttpGet("[https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/source.lua](https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/source.lua)"))()
+-- Boot
+local ImGuiLib = loadstring(game:HttpGet("[https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/source.lua](https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/source.lua)"))()```
 
-## Create Window
-```lua
+-- Create Window
 local Window = ImGuiLib:CreateWindow({
     Title = "UI Library Template",
     Size = Vector2.new(340, 430)
 })
 
-## Create Section Header
-```lua
+-- Create Section Header
 local Section = Window:CreateHeader({ Name = "Section Header" })
 
-## Create Toggle
-```lua
+-- Create Toggle
 Section:CreateToggle({
     Name = "Toggle",
     Default = false,
@@ -25,8 +23,7 @@ Section:CreateToggle({
     end
 })
 
-## Create Slider
-```lua
+-- Create Slider
 Section:CreateSlider({
     Name = "Slider",
     Min = 0,
@@ -36,3 +33,50 @@ Section:CreateSlider({
         print(val)
     end
 })
+
+-- Create Dropdown
+Section:CreateDropdown({
+    Name = "Dropdown",
+    Options = {"Option 1", "Option 2", "Option 3"},
+    Default = "Option 1",
+    Callback = function(selection)
+        print(selection)
+    end
+})
+
+-- Create TextBox
+Section:CreateTextBox({
+    Name = "TextBox",
+    Placeholder = "Type here...",
+    Callback = function(inputStr)
+        print(inputStr)
+    end
+})
+
+-- Create Keybind
+Section:CreateKeybind({
+    Name = "Keybind",
+    Default = Enum.KeyCode.E,
+    Callback = function()
+        print("Activated")
+    end
+})
+
+-- Create Multi Dropdown
+Section:CreateMultiDropdown({
+    Name = "Multi Dropdown",
+    Options = {"Option 1", "Option 2", "Option 3", "Option 4"},
+    Default = {["Option 1"] = true},
+    Callback = function(selections)
+        for option, checked in pairs(selections) do
+            print(option, checked)
+        end
+    end
+})
+
+-- Create Paragraph
+local Paragraph = Section:CreateParagraph({
+    Text = "This is a Paragraph element.",
+    Color = Color3.fromRGB(170, 180, 190)
+})
+
