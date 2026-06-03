@@ -1,4 +1,4 @@
-# xqzMenu
+# ImGuiLib
 
 ## Installation
 ```lua
