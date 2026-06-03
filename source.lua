@@ -257,12 +257,15 @@ function ImGuiLib:CreateWindow(config)
             SelectBox.TextXAlignment = Enum.TextXAlignment.Left
             SelectBox.ZIndex = 4
             SelectBox.Parent = DropdownFrame
-            local OptionsList = Instance.new("Frame")
+            local OptionsList = Instance.new("ScrollingFrame")
             OptionsList.Size = UDim2.new(1, 0, 0, 0)
             OptionsList.Position = UDim2.new(0, 0, 1, 1)
             OptionsList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             OptionsList.BorderSizePixel = 1
             OptionsList.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            OptionsList.ScrollBarThickness = 4
+            OptionsList.ScrollBarImageColor3 = Color3.fromRGB(70, 70, 70)
+            OptionsList.CanvasSize = UDim2.new(0, 0, 0, #options * 18)
             OptionsList.Visible = false
             OptionsList.ZIndex = 5
             OptionsList.Parent = SelectBox
@@ -272,7 +275,8 @@ function ImGuiLib:CreateWindow(config)
             local function toggleDropdown()
                 isOpen = not isOpen
                 OptionsList.Visible = isOpen
-                OptionsList.Size = isOpen and UDim2.new(1, 0, 0, #options * 18) or UDim2.new(1, 0, 0, 0)
+                local targetHeight = math.clamp(#options * 18, 0, 100)
+                OptionsList.Size = isOpen and UDim2.new(1, 0, 0, targetHeight) or UDim2.new(1, 0, 0, 0)
             end
             SelectBox.MouseButton1Click:Connect(toggleDropdown)
             for _, optName in ipairs(options) do
