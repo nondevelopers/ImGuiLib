@@ -9,11 +9,11 @@ local ImGuiLib = loadstring(game:HttpGet("[https://raw.githubusercontent.com/YOU
 local Window = ImGuiLib:CreateWindow({
     Title = "UI Library Template",
     Size = Vector2.new(340, 430)
-})```
+})
 
 ## Create Section Header
 ```lua
-local Section = Window:CreateHeader({ Name = "Section Header" })```
+local Section = Window:CreateHeader({ Name = "Section Header" })
 
 ## Create Toggle
 ```lua
@@ -23,7 +23,7 @@ Section:CreateToggle({
     Callback = function(state)
         print(state)
     end
-})```
+})
 
 ## Create Slider
 ```lua
