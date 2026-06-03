@@ -54,23 +54,13 @@ Section:CreateTextBox({
 })
 
 -- Create Keybind
+-- (Supports two configurations for the Mode argument: "Toggle" or "Hold")
 Section:CreateKeybind({
     Name = "Keybind",
     Default = Enum.KeyCode.E,
-    Callback = function()
-        print("Activated")
-    end
-})
-
--- Create Multi Dropdown
-Section:CreateMultiDropdown({
-    Name = "Multi Dropdown",
-    Options = {"Option 1", "Option 2", "Option 3", "Option 4"},
-    Default = {["Option 1"] = true},
-    Callback = function(selections)
-        for option, checked in pairs(selections) do
-            print(option, checked)
-        end
+    Mode = "Toggle", 
+    Callback = function(state)
+        print("Keybind active:", state)
     end
 })
 
