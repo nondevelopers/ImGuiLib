@@ -3,7 +3,7 @@
 ## Installation
 ```lua
 -- Boot
-local ImGuiLib = loadstring(game:HttpGet("[https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/source.lua](https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/source.lua)"))()```
+local ImGuiLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/xqzxa/xqzMenu/main/source.lua"))()
 
 -- Create Window
 local Window = ImGuiLib:CreateWindow({
