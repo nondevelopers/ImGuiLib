@@ -1,0 +1,500 @@
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local ImGuiLib = {}
+
+function ImGuiLib:CreateWindow(config)
+    local title = config.Title or "ImGui Menu"
+    local size = config.Size or Vector2.new(350, 450)
+    
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "CustomImGui_Lib"
+    ScreenGui.ResetOnSpawn = false
+    
+    if syn and syn.protect_gui then syn.protect_gui(ScreenGui) 
+    elseif gethui then ScreenGui.Parent = gethui() 
+    else ScreenGui.Parent = CoreGui end
+    
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, size.X, 0, size.Y)
+    MainFrame.Position = UDim2.new(0, 100, 0, 100)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    MainFrame.BorderSizePixel = 1
+    MainFrame.BorderColor3 = Color3.fromRGB(60, 60, 60)
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    MainFrame.ClipsDescendants = true
+    MainFrame.Parent = ScreenGui
+    
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
+    TitleBar.Size = UDim2.new(1, 0, 0, 22)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Parent = MainFrame
+    
+    local TitleText = Instance.new("TextLabel")
+    TitleText.Size = UDim2.new(1, -70, 1, 0)
+    TitleText.Position = UDim2.new(0, 8, 0, 0)
+    TitleText.BackgroundTransparency = 1
+    TitleText.Text = title
+    TitleText.TextColor3 = Color3.fromRGB(240, 240, 240)
+    TitleText.Font = Enum.Font.Code
+    TitleText.TextSize = 13
+    TitleText.TextXAlignment = Enum.TextXAlignment.Left
+    TitleText.Parent = TitleBar
+
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Size = UDim2.new(0, 22, 1, 0)
+    CloseButton.Position = UDim2.new(1, -22, 0, 0)
+    CloseButton.BackgroundTransparency = 1
+    CloseButton.Text = "[X]"
+    CloseButton.TextColor3 = Color3.fromRGB(200, 80, 80)
+    CloseButton.Font = Enum.Font.Code
+    CloseButton.TextSize = 12
+    CloseButton.Parent = TitleBar
+    CloseButton.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+    
+    local MinimizeButton = Instance.new("TextButton")
+    MinimizeButton.Size = UDim2.new(0, 22, 1, 0)
+    MinimizeButton.Position = UDim2.new(1, -44, 0, 0)
+    MinimizeButton.BackgroundTransparency = 1
+    MinimizeButton.Text = "[-]"
+    MinimizeButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    MinimizeButton.Font = Enum.Font.Code
+    MinimizeButton.TextSize = 12
+    MinimizeButton.Parent = TitleBar
+    
+    local IsMinimized = false
+    MinimizeButton.MouseButton1Click:Connect(function()
+        IsMinimized = not IsMinimized
+        MainFrame.Size = IsMinimized and UDim2.new(0, size.X, 0, 22) or UDim2.new(0, size.X, 0, size.Y)
+        MinimizeButton.Text = IsMinimized and "[+]" or "[-]"
+    end)
+
+    local ContentScroll = Instance.new("ScrollingFrame")
+    ContentScroll.Size = UDim2.new(1, -10, 1, -28)
+    ContentScroll.Position = UDim2.new(0, 5, 0, 26)
+    ContentScroll.BackgroundTransparency = 1
+    ContentScroll.BorderSizePixel = 0
+    ContentScroll.ScrollBarThickness = 4
+    ContentScroll.ScrollBarImageColor3 = Color3.fromRGB(70, 70, 70)
+    ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    ContentScroll.ClipsDescendants = false
+    ContentScroll.Parent = MainFrame
+    
+    local Layout = Instance.new("UIListLayout")
+    Layout.Padding = UDim.new(0, 5)
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+    Layout.Parent = ContentScroll
+    
+    Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        ContentScroll.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 20)
+    end)
+
+    local WindowObj = {}
+    
+    function WindowObj:CreateHeader(headerConfig)
+        local headerName = headerConfig.Name or "Category"
+        
+        local HeaderFrame = Instance.new("Frame")
+        HeaderFrame.Size = UDim2.new(1, 0, 0, 22)
+        HeaderFrame.BackgroundColor3 = Color3.fromRGB(35, 45, 55)
+        HeaderFrame.BorderSizePixel = 1
+        HeaderFrame.BorderColor3 = Color3.fromRGB(50, 65, 80)
+        HeaderFrame.Parent = ContentScroll
+        
+        local HeaderText = Instance.new("TextLabel")
+        HeaderText.Size = UDim2.new(1, 0, 1, 0)
+        HeaderText.Position = UDim2.new(0, 6, 0, 0)
+        HeaderText.BackgroundTransparency = 1
+        HeaderText.Text = "[-] " .. headerName
+        HeaderText.TextColor3 = Color3.fromRGB(200, 220, 255)
+        HeaderText.Font = Enum.Font.Code
+        HeaderText.TextSize = 12
+        HeaderText.TextXAlignment = Enum.TextXAlignment.Left
+        HeaderText.Parent = HeaderFrame
+        
+        local Container = Instance.new("Frame")
+        Container.Size = UDim2.new(1, 0, 0, 0)
+        Container.BackgroundTransparency = 1
+        Container.AutomaticSize = Enum.AutomaticSize.Y
+        Container.Visible = true
+        Container.ZIndex = 2
+        Container.Parent = ContentScroll
+        
+        local ContainerLayout = Instance.new("UIListLayout")
+        ContainerLayout.Padding = UDim.new(0, 5)
+        ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ContainerLayout.Parent = Container
+        
+        local Expanded = true
+        HeaderFrame.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                Expanded = not Expanded
+                Container.Visible = Expanded
+                HeaderText.Text = (Expanded and "[-] " or "[+] ") .. headerName
+            end
+        end)
+        
+        local HeaderObj = {}
+        
+        function HeaderObj:CreateToggle(tConfig)
+            local state = tConfig.Default or false
+            local callback = tConfig.Callback or function() end
+            local ToggleFrame = Instance.new("Frame")
+            ToggleFrame.Size = UDim2.new(1, 0, 0, 20)
+            ToggleFrame.BackgroundTransparency = 1
+            ToggleFrame.Parent = Container
+            local Indicator = Instance.new("Frame")
+            Indicator.Size = UDim2.new(0, 12, 0, 12)
+            Indicator.Position = UDim2.new(0, 5, 0, 4)
+            Indicator.BackgroundColor3 = state and Color3.fromRGB(30, 120, 215) or Color3.fromRGB(45, 45, 45)
+            Indicator.BorderSizePixel = 1
+            Indicator.BorderColor3 = Color3.fromRGB(70, 70, 70)
+            Indicator.Parent = ToggleFrame
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -25, 1, 0)
+            Label.Position = UDim2.new(0, 24, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = tConfig.Name
+            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+            Label.Font = Enum.Font.Code
+            Label.TextSize = 12
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = ToggleFrame
+            ToggleFrame.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    state = not state
+                    Indicator.BackgroundColor3 = state and Color3.fromRGB(30, 120, 215) or Color3.fromRGB(45, 45, 45)
+                    callback(state)
+                end
+            end)
+        end
+        
+        function HeaderObj:CreateSlider(sConfig)
+            local min = sConfig.Min or 0
+            local max = sConfig.Max or 100
+            local current = sConfig.Default or min
+            local callback = sConfig.Callback or function() end
+            local SliderFrame = Instance.new("Frame")
+            SliderFrame.Size = UDim2.new(1, 0, 0, 34)
+            SliderFrame.BackgroundTransparency = 1
+            SliderFrame.Parent = Container
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -10, 0, 14)
+            Label.Position = UDim2.new(0, 5, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = sConfig.Name .. " [" .. tostring(current) .. "]"
+            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+            Label.Font = Enum.Font.Code
+            Label.TextSize = 11
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = SliderFrame
+            local Track = Instance.new("Frame")
+            Track.Size = UDim2.new(1, -15, 0, 10)
+            Track.Position = UDim2.new(0, 5, 0, 16)
+            Track.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            Track.BorderSizePixel = 1
+            Track.BorderColor3 = Color3.fromRGB(70, 70, 70)
+            Track.Parent = SliderFrame
+            local Fill = Instance.new("Frame")
+            local percent = (current - min) / (max - min)
+            Fill.Size = UDim2.new(percent, 0, 1, 0)
+            Fill.BackgroundColor3 = Color3.fromRGB(30, 120, 215)
+            Fill.BorderSizePixel = 0
+            Fill.Parent = Track
+            local function updateSlider(input)
+                local xOffset = math.clamp(input.Position.X - Track.AbsolutePosition.X, 0, Track.AbsoluteSize.X)
+                local newPercent = xOffset / Track.AbsoluteSize.X
+                local newValue = math.floor(min + (newPercent * (max - min)))
+                Fill.Size = UDim2.new(newPercent, 0, 1, 0)
+                Label.Text = sConfig.Name .. " [" .. tostring(newValue) .. "]"
+                callback(newValue)
+            end
+            local dragging = false
+            Track.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true updateSlider(input) end
+            end)
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then updateSlider(input) end
+            end)
+            UserInputService.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+            end)
+        end
+
+        function HeaderObj:CreateDropdown(dConfig)
+            local options = dConfig.Options or {}
+            local currentSelection = dConfig.Default or options[1] or "None"
+            local callback = dConfig.Callback or function() end
+            local DropdownFrame = Instance.new("Frame")
+            DropdownFrame.Size = UDim2.new(1, 0, 0, 36)
+            DropdownFrame.BackgroundTransparency = 1
+            DropdownFrame.Parent = Container
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -10, 0, 14)
+            Label.Position = UDim2.new(0, 5, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = dConfig.Name
+            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+            Label.Font = Enum.Font.Code
+            Label.TextSize = 11
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = DropdownFrame
+            local SelectBox = Instance.new("TextButton")
+            SelectBox.Size = UDim2.new(1, -15, 0, 18)
+            SelectBox.Position = UDim2.new(0, 5, 0, 15)
+            SelectBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            SelectBox.BorderSizePixel = 1
+            SelectBox.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            SelectBox.Text = "  " .. currentSelection .. "  ▼"
+            SelectBox.TextColor3 = Color3.fromRGB(240, 240, 240)
+            SelectBox.Font = Enum.Font.Code
+            SelectBox.TextSize = 11
+            SelectBox.TextXAlignment = Enum.TextXAlignment.Left
+            SelectBox.ZIndex = 4
+            SelectBox.Parent = DropdownFrame
+            local OptionsList = Instance.new("Frame")
+            OptionsList.Size = UDim2.new(1, 0, 0, 0)
+            OptionsList.Position = UDim2.new(0, 0, 1, 1)
+            OptionsList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            OptionsList.BorderSizePixel = 1
+            OptionsList.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            OptionsList.Visible = false
+            OptionsList.ZIndex = 5
+            OptionsList.Parent = SelectBox
+            local ListLayout = Instance.new("UIListLayout")
+            ListLayout.Parent = OptionsList
+            local isOpen = false
+            local function toggleDropdown()
+                isOpen = not isOpen
+                OptionsList.Visible = isOpen
+                OptionsList.Size = isOpen and UDim2.new(1, 0, 0, #options * 18) or UDim2.new(1, 0, 0, 0)
+            end
+            SelectBox.MouseButton1Click:Connect(toggleDropdown)
+            for _, optName in ipairs(options) do
+                local OptButton = Instance.new("TextButton")
+                OptButton.Size = UDim2.new(1, 0, 0, 18)
+                OptButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+                OptButton.BorderSizePixel = 0
+                OptButton.Text = "  " .. optName
+                OptButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+                OptButton.Font = Enum.Font.Code
+                OptButton.TextSize = 11
+                OptButton.TextXAlignment = Enum.TextXAlignment.Left
+                OptButton.ZIndex = 6
+                OptButton.Parent = OptionsList
+                OptButton.MouseEnter:Connect(function() OptButton.BackgroundColor3 = Color3.fromRGB(30, 120, 215) end)
+                OptButton.MouseLeave:Connect(function() OptButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35) end)
+                OptButton.MouseButton1Click:Connect(function()
+                    currentSelection = optName
+                    SelectBox.Text = "  " .. currentSelection .. "  ▼"
+                    toggleDropdown()
+                    callback(currentSelection)
+                end)
+            end
+        end
+
+        function HeaderObj:CreateTextBox(tbConfig)
+            local callback = tbConfig.Callback or function() end
+            local TBFrame = Instance.new("Frame")
+            TBFrame.Size = UDim2.new(1, 0, 0, 36)
+            TBFrame.BackgroundTransparency = 1
+            TBFrame.Parent = Container
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -10, 0, 14)
+            Label.Position = UDim2.new(0, 5, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = tbConfig.Name
+            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+            Label.Font = Enum.Font.Code
+            Label.TextSize = 11
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = TBFrame
+            local Box = Instance.new("TextBox")
+            Box.Size = UDim2.new(1, -15, 0, 18)
+            Box.Position = UDim2.new(0, 5, 0, 15)
+            Box.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+            Box.BorderSizePixel = 1
+            Box.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            Box.Text = ""
+            Box.PlaceholderText = tbConfig.Placeholder or "Type..."
+            Box.TextColor3 = Color3.fromRGB(255, 255, 255)
+            Box.Font = Enum.Font.Code
+            Box.TextSize = 12
+            Box.TextXAlignment = Enum.TextXAlignment.Left
+            Box.ClearTextOnFocus = false
+            Box.Parent = TBFrame
+            Box.FocusLost:Connect(function() callback(Box.Text) end)
+        end
+
+        function HeaderObj:CreateKeybind(kConfig)
+            local currentKey = kConfig.Default or Enum.KeyCode.E
+            local callback = kConfig.Callback or function() end
+            local listening = false
+            
+            local BindFrame = Instance.new("Frame")
+            BindFrame.Size = UDim2.new(1, 0, 0, 22)
+            BindFrame.BackgroundTransparency = 1
+            BindFrame.Parent = Container
+            
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -80, 1, 0)
+            Label.Position = UDim2.new(0, 5, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = kConfig.Name
+            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+            Label.Font = Enum.Font.Code
+            Label.TextSize = 12
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = BindFrame
+            
+            local BindBtn = Instance.new("TextButton")
+            BindBtn.Size = UDim2.new(0, 70, 0, 18)
+            BindBtn.Position = UDim2.new(1, -80, 0, 2)
+            BindBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            BindBtn.BorderSizePixel = 1
+            BindBtn.BorderColor3 = Color3.fromRGB(70, 70, 70)
+            BindBtn.Text = "[" .. currentKey.Name .. "]"
+            BindBtn.TextColor3 = Color3.fromRGB(30, 150, 255)
+            BindBtn.Font = Enum.Font.Code
+            BindBtn.TextSize = 11
+            BindBtn.Parent = BindFrame
+            
+            BindBtn.MouseButton1Click:Connect(function()
+                listening = true
+                BindBtn.Text = "[...]"
+                BindBtn.TextColor3 = Color3.fromRGB(230, 200, 50)
+            end)
+            
+            UserInputService.InputBegan:Connect(function(input, gpe)
+                if gpe then return end
+                if listening and input.UserInputType == Enum.UserInputType.Keyboard then
+                    listening = false
+                    currentKey = input.KeyCode
+                    BindBtn.Text = "[" .. currentKey.Name .. "]"
+                    BindBtn.TextColor3 = Color3.fromRGB(30, 150, 255)
+                elseif not listening and input.KeyCode == currentKey then
+                    callback()
+                end
+            end)
+        end
+
+        function HeaderObj:CreateMultiDropdown(mdConfig)
+            local options = mdConfig.Options or {}
+            local selections = mdConfig.Default or {}
+            local callback = mdConfig.Callback or function() end
+            
+            local MDFram = Instance.new("Frame")
+            MDFram.Size = UDim2.new(1, 0, 0, 36)
+            MDFram.BackgroundTransparency = 1
+            MDFram.Parent = Container
+            
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -10, 0, 14)
+            Label.Position = UDim2.new(0, 5, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = mdConfig.Name
+            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+            Label.Font = Enum.Font.Code
+            Label.TextSize = 11
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = MDFram
+            
+            local SelectBox = Instance.new("TextButton")
+            SelectBox.Size = UDim2.new(1, -15, 0, 18)
+            SelectBox.Position = UDim2.new(0, 5, 0, 15)
+            SelectBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            SelectBox.BorderSizePixel = 1
+            SelectBox.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            SelectBox.Text = "  Select Multiple...  ▼"
+            SelectBox.TextColor3 = Color3.fromRGB(160, 160, 160)
+            SelectBox.Font = Enum.Font.Code
+            SelectBox.TextSize = 11
+            SelectBox.TextXAlignment = Enum.TextXAlignment.Left
+            SelectBox.ZIndex = 4
+            SelectBox.Parent = MDFram
+            
+            local OptionsList = Instance.new("Frame")
+            OptionsList.Size = UDim2.new(1, 0, 0, 0)
+            OptionsList.Position = UDim2.new(0, 0, 1, 1)
+            OptionsList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            OptionsList.BorderSizePixel = 1
+            OptionsList.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            OptionsList.Visible = false
+            OptionsList.ZIndex = 5
+            OptionsList.Parent = SelectBox
+            
+            local ListLayout = Instance.new("UIListLayout")
+            ListLayout.Parent = OptionsList
+            
+            local isOpen = false
+            SelectBox.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                OptionsList.Visible = isOpen
+                OptionsList.Size = isOpen and UDim2.new(1, 0, 0, #options * 18) or UDim2.new(1, 0, 0, 0)
+            end)
+            
+            for _, optName in ipairs(options) do
+                local active = selections[optName] or false
+                
+                local OptButton = Instance.new("TextButton")
+                OptButton.Size = UDim2.new(1, 0, 0, 18)
+                OptButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+                OptButton.BorderSizePixel = 0
+                OptButton.Text = (active and "  [X] " or "  [ ] ") .. optName
+                OptButton.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
+                OptButton.Font = Enum.Font.Code
+                OptButton.TextSize = 11
+                OptButton.TextXAlignment = Enum.TextXAlignment.Left
+                OptButton.ZIndex = 6
+                OptButton.Parent = OptionsList
+                
+                OptButton.MouseButton1Click:Connect(function()
+                    active = not active
+                    selections[optName] = active
+                    OptButton.Text = (active and "  [X] " or "  [ ] ") .. optName
+                    OptButton.TextColor3 = active and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 180)
+                    callback(selections)
+                end)
+            end
+        end
+
+        function HeaderObj:CreateParagraph(pConfig)
+            local contentText = pConfig.Text or "Status log output."
+            
+            local ParaFrame = Instance.new("Frame")
+            ParaFrame.Size = UDim2.new(1, -15, 0, 0)
+            ParaFrame.Position = UDim2.new(0, 5, 0, 0)
+            ParaFrame.BackgroundTransparency = 1
+            ParaFrame.AutomaticSize = Enum.AutomaticSize.Y
+            ParaFrame.Parent = Container
+            
+            local TextLabel = Instance.new("TextLabel")
+            TextLabel.Size = UDim2.new(1, 0, 1, 0)
+            TextLabel.BackgroundTransparency = 1
+            TextLabel.Text = contentText
+            TextLabel.TextColor3 = pConfig.Color or Color3.fromRGB(170, 180, 190)
+            TextLabel.Font = Enum.Font.Code
+            TextLabel.TextSize = 11
+            TextLabel.TextWrapped = true
+            TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+            TextLabel.Parent = ParaFrame
+            
+            local ParaObj = {}
+            function ParaObj:SetText(newText)
+                TextLabel.Text = newText
+            end
+            return ParaObj
+        end
+
+        return HeaderObj
+    end
+    
+    return WindowObj
+end
+
+return ImGuiLib
