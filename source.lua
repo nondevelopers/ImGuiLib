@@ -141,6 +141,35 @@ function ImGuiLib:CreateWindow(config)
         end)
         
         local HeaderObj = {}
+
+        function HeaderObj:CreateButton(bConfig)
+            local buttonName = bConfig.Name or "Button"
+            local callback = bConfig.Callback or function() end
+            
+            local ButtonFrame = Instance.new("Frame")
+            ButtonFrame.Size = UDim2.new(1, 0, 0, 22)
+            ButtonFrame.BackgroundTransparency = 1
+            ButtonFrame.Parent = Container
+            
+            local ActualButton = Instance.new("TextButton")
+            ActualButton.Size = UDim2.new(1, -15, 0, 18)
+            ActualButton.Position = UDim2.new(0, 5, 0, 2)
+            ActualButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+            ActualButton.BorderSizePixel = 1
+            ActualButton.BorderColor3 = Color3.fromRGB(70, 70, 70)
+            ActualButton.Text = buttonName
+            ActualButton.TextColor3 = Color3.fromRGB(230, 230, 230)
+            ActualButton.Font = Enum.Font.Code
+            ActualButton.TextSize = 11
+            ActualButton.Parent = ButtonFrame
+
+            ActualButton.MouseEnter:Connect(function() ActualButton.TextColor3 = Color3.fromRGB(30, 150, 255) end)
+            ActualButton.MouseLeave:Connect(function() ActualButton.TextColor3 = Color3.fromRGB(230, 230, 230) end)
+            
+            ActualButton.MouseButton1Click:Connect(function()
+                task.spawn(callback)
+            end)
+        end
         
         function HeaderObj:CreateToggle(tConfig)
             local state = tConfig.Default or false
