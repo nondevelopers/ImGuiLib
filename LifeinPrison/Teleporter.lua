@@ -14,7 +14,12 @@ local Locations = {
     { Name = "WareHouse (Criminal base 1)", Cords = Vector3.new(-1451.65, 1083.61, 93.37)},
     { Name = "WareHouse Roof", Cords = Vector3.new(-1428.42, 1111.33, 80.17)},
     { Name = "Outpost (Criminal base 2)", Cords = Vector3.new(-650.52, 1054.74, -635.37)},
-    { Name = "Outpost Roof", Cords = Vector3.new(-658.18, 1090.99, -634.69)}
+    { Name = "Outpost Roof", Cords = Vector3.new(-658.18, 1090.99, -634.69)},
+    { Name = "Arms Store", Cords = Vector3.new(-1005.82, 1049.43, 170.54)},
+    { Name = "Barn", Cords = Vector3.new(-1017.38, 1076.87, 397.64)},
+    { Name = "China House thing", Cords = Vector3.new(-994.29, 1084.72, -198.58)},
+    { Name = "Special Guns", Cords = Vector3.new(-137.43, 1197.38, -738.71)},
+    { Name = "Factory", Cords = Vector3.new(-1153.58, 1061.36, -97.44)}
 }
 
 local LocationNames = {}
@@ -54,7 +59,7 @@ local function Teleport(targetName)
 end
 
 MainSection:CreateDropdown({
-    Name = "Select Destination",
+    Name = "Place Teleportion",
     Options = LocationNames,
     Default = LocationNames[1] or "None",
     Callback = function(selection)
