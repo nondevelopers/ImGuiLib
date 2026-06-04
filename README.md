@@ -70,3 +70,12 @@ local Paragraph = Section:CreateParagraph({
     Color = Color3.fromRGB(170, 180, 190)
 })
 
+-- Create Button
+Section:CreateButton({
+    Name = "Button Name Here",
+    Callback = function()
+        print("Button clicked!")
+        -- Put your script features or actions here
+    end
+})
+
