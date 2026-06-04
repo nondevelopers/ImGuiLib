@@ -73,6 +73,7 @@ function ImGuiLib:CreateWindow(config)
         IsMinimized = not IsMinimized
         MainFrame.Size = IsMinimized and UDim2.new(0, size.X, 0, 22) or UDim2.new(0, size.X, 0, size.Y)
         MinimizeButton.Text = IsMinimized and "[+]" or "[-]"
+        ContentScroll.Visible = not IsMinimized
     end)
 
     local ContentScroll = Instance.new("ScrollingFrame")
