@@ -8,11 +8,12 @@ local LocalPlayer = Players.LocalPlayer
 
 local Settings = {
     Enabled = false,
+    Keybind = Enum.KeyCode.Q,
     TeamCheck = true,
     WallCheck = true,
     FOV = 100,
-    Smoothness = 3,
-    Tracers = false
+    Smoothness = 2,
+    Tracers = true
 }
 
 local FOVCircle = Drawing.new("Circle")
@@ -112,14 +113,14 @@ RunService.RenderStepped:Connect(function()
 end)
 
 local Window = ImGuiLib:CreateWindow({
-    Title = "Cursor Lock Menu",
+    Title = "Combat Utilities",
     Size = Vector2.new(300, 360)
 })
 
 local AimHeader = Window:CreateHeader({ Name = "Cursor Lock Settings" })
 
-AimHeader:CreateToggle({
-    Name = "Enable Cursor Lock",
+local LockToggle = AimHeader:CreateToggle({
+    Name = "Enable Cursor Lock (Keybind: Q)",
     Default = false,
     Callback = function(state)
         Settings.Enabled = state
@@ -129,7 +130,7 @@ AimHeader:CreateToggle({
 
 AimHeader:CreateToggle({
     Name = "Wall Check",
-    Default = true,
+    Default = false,
     Callback = function(state)
         Settings.WallCheck = state
     end
@@ -137,7 +138,7 @@ AimHeader:CreateToggle({
 
 AimHeader:CreateToggle({
     Name = "Team Check",
-    Default = true,
+    Default = false,
     Callback = function(state)
         Settings.TeamCheck = state
     end
@@ -170,3 +171,12 @@ AimHeader:CreateToggle({
         Settings.Tracers = state
     end
 })
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Settings.Keybind then
+        Settings.Enabled = not Settings.Enabled
+        FOVCircle.Visible = Settings.Enabled
+        LockToggle:SetState(Settings.Enabled)
+    end
+end)
