@@ -112,7 +112,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 local Window = ImGuiLib:CreateWindow({
-    Title = "Combat Utilities",
+    Title = "Cursor Lock Menu",
     Size = Vector2.new(300, 360)
 })
 
