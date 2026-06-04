@@ -1,4 +1,4 @@
-local ImGuiLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/xqzxa/xqzMenu/main/source.lua"))()
+local ImGuiLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/xqzxa/ImGuiLib/main/source.lua"))()
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
