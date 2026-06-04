@@ -1,6 +1,7 @@
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
 
 local ImGuiLib = {}
 
@@ -300,6 +301,96 @@ function ImGuiLib:CreateWindow(config)
                     callback(currentSelection)
                 end)
             end
+        end
+
+        function HeaderObj:CreatePlayerDropdown(pdConfig)
+            local callback = pdConfig.Callback or function() end
+            local DropdownFrame = Instance.new("Frame")
+            DropdownFrame.Size = UDim2.new(1, 0, 0, 36)
+            DropdownFrame.BackgroundTransparency = 1
+            DropdownFrame.Parent = Container
+            local Label = Instance.new("TextLabel")
+            Label.Size = UDim2.new(1, -10, 0, 14)
+            Label.Position = UDim2.new(0, 5, 0, 0)
+            Label.BackgroundTransparency = 1
+            Label.Text = pdConfig.Name or "Select Player"
+            Label.TextColor3 = Color3.fromRGB(220, 220, 220)
+            Label.Font = Enum.Font.Code
+            Label.TextSize = 11
+            Label.TextXAlignment = Enum.TextXAlignment.Left
+            Label.Parent = DropdownFrame
+            local SelectBox = Instance.new("TextButton")
+            SelectBox.Size = UDim2.new(1, -15, 0, 18)
+            SelectBox.Position = UDim2.new(0, 5, 0, 15)
+            SelectBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            SelectBox.BorderSizePixel = 1
+            SelectBox.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            SelectBox.Text = "  Select a player...  ▼"
+            SelectBox.TextColor3 = Color3.fromRGB(240, 240, 240)
+            SelectBox.Font = Enum.Font.Code
+            SelectBox.TextSize = 11
+            SelectBox.TextXAlignment = Enum.TextXAlignment.Left
+            SelectBox.ZIndex = 4
+            SelectBox.Parent = DropdownFrame
+            local OptionsList = Instance.new("ScrollingFrame")
+            OptionsList.Size = UDim2.new(1, 0, 0, 0)
+            OptionsList.Position = UDim2.new(0, 0, 1, 1)
+            OptionsList.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            OptionsList.BorderSizePixel = 1
+            OptionsList.BorderColor3 = Color3.fromRGB(65, 65, 65)
+            OptionsList.ScrollBarThickness = 4
+            OptionsList.ScrollBarImageColor3 = Color3.fromRGB(70, 70, 70)
+            OptionsList.Visible = false
+            OptionsList.ZIndex = 5
+            OptionsList.Parent = SelectBox
+            local ListLayout = Instance.new("UIListLayout")
+            ListLayout.Parent = OptionsList
+            local isOpen = false
+            local function rebuildPlayerList()
+                for _, child in ipairs(OptionsList:GetChildren()) do
+                    if child:IsA("TextButton") then child:Destroy() end
+                end
+                local listCount = 0
+                for _, p in ipairs(Players:GetPlayers()) do
+                    if p ~= Players.LocalPlayer then
+                        listCount = listCount + 1
+                        local OptButton = Instance.new("TextButton")
+                        OptButton.Size = UDim2.new(1, 0, 0, 18)
+                        OptButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+                        OptButton.BorderSizePixel = 0
+                        OptButton.Text = "  " .. p.Name
+                        OptButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+                        OptButton.Font = Enum.Font.Code
+                        OptButton.TextSize = 11
+                        OptButton.TextXAlignment = Enum.TextXAlignment.Left
+                        OptButton.ZIndex = 6
+                        OptButton.Parent = OptionsList
+                        OptButton.MouseEnter:Connect(function() OptButton.BackgroundColor3 = Color3.fromRGB(30, 120, 215) end)
+                        OptButton.MouseLeave:Connect(function() OptButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35) end)
+                        OptButton.MouseButton1Click:Connect(function()
+                            SelectBox.Text = "  " .. p.Name .. "  ▼"
+                            isOpen = false
+                            OptionsList.Visible = false
+                            OptionsList.Size = UDim2.new(1, 0, 0, 0)
+                            callback(p.Name)
+                        end)
+                    end
+                end
+                OptionsList.CanvasSize = UDim2.new(0, 0, 0, listCount * 18)
+                if isOpen then
+                    OptionsList.Size = UDim2.new(1, 0, 0, math.clamp(listCount * 18, 0, 100))
+                end
+            end
+            SelectBox.MouseButton1Click:Connect(function()
+                isOpen = not isOpen
+                OptionsList.Visible = isOpen
+                if isOpen then rebuildPlayerList() else OptionsList.Size = UDim2.new(1, 0, 0, 0) end
+            end)
+            Players.PlayerAdded:Connect(function() task.wait(0.5) if isOpen then rebuildPlayerList() end end)
+            Players.PlayerRemoving:Connect(function(p) 
+                if SelectBox.Text == "  " .. p.Name .. "  ▼" then SelectBox.Text = "  Select a player...  ▼" end
+                task.wait(0.5) if isOpen then rebuildPlayerList() end 
+            end)
         end
 
         function HeaderObj:CreateTextBox(tbConfig)
