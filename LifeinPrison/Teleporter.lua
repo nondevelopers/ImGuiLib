@@ -32,10 +32,10 @@ end
 
 local Window = ImGuiLib:CreateWindow({
     Title = "Life in Prison Teleport Tool",
-    Size = Vector2.new(340, 310)
+    Size = Vector2.new(340, 340)
 })
 
-local MainSection = Window:CreateHeader({ Name = "Teleport" })
+local MainSection = Window:CreateHeader({ Name = "Movement Matrix" })
 
 local StatusLog = MainSection:CreateParagraph({
     Text = "Status: Ready",
@@ -81,3 +81,59 @@ PlayerSection:CreatePlayerDropdown({
         end
     end
 })
+
+local UtilitySection = Window:CreateHeader({ Name = "Utilities" })
+
+local ToolActiveSetting = false
+local ActiveTool = nil
+local ToolConnection = nil
+
+local function CleanUpTool()
+    if ToolConnection then ToolConnection:Disconnect() ToolConnection = nil end
+    if ActiveTool then ActiveTool:Destroy() ActiveTool = nil end
+    
+    local existing = LocalPlayer.Backpack:FindFirstChild("TP Tool") or (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("TP Tool"))
+    if existing then existing:Destroy() end
+end
+
+local function GiveToolInstance()
+    CleanUpTool()
+    
+    local Tool = Instance.new("Tool")
+    Tool.Name = "TP Tool"
+    Tool.RequiresHandle = false
+    
+    ToolConnection = Tool.Activated:Connect(function()
+        local Mouse = LocalPlayer:GetMouse()
+        if Mouse and Mouse.Hit then
+            TeleportToCords(Mouse.Hit.Position + Vector3.new(0, 3, 0), "Mouse Click")
+        end
+    end)
+    
+    Tool.Parent = LocalPlayer:WaitForChild("Backpack")
+    ActiveTool = Tool
+end
+
+UtilitySection:CreateToggle({
+    Name = "Give Teleport Tool",
+    Default = false,
+    Callback = function(state)
+        ToolActiveSetting = state
+        if state then
+            GiveToolInstance()
+            StatusLog:SetText("Status: TP Tool Equipped")
+        else
+            CleanUpTool()
+            StatusLog:SetText("Status: TP Tool Removed")
+        end
+    end
+})
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    if ToolActiveSetting then
+        GiveToolInstance()
+    else
+        CleanUpTool()
+    end
+end)
