@@ -70,27 +70,39 @@ function ImGuiLib:CreateWindow(config)
     
     local IsMinimized = false
 
+    -- ClipFrame sits below the title bar and hard-clips everything inside it.
+    -- This stops scrolled content from bleeding over the title bar while
+    -- keeping ContentScroll.ClipsDescendants = false so dropdowns still work.
+    local ClipFrame = Instance.new("Frame")
+    ClipFrame.Name = "ClipFrame"
+    ClipFrame.Size = UDim2.new(1, 0, 1, -22)
+    ClipFrame.Position = UDim2.new(0, 0, 0, 22)
+    ClipFrame.BackgroundTransparency = 1
+    ClipFrame.BorderSizePixel = 0
+    ClipFrame.ClipsDescendants = true
+    ClipFrame.Parent = MainFrame
+
     local ContentScroll = Instance.new("ScrollingFrame")
-    ContentScroll.Size = UDim2.new(1, -10, 1, -28)
-    ContentScroll.Position = UDim2.new(0, 5, 0, 26)
+    ContentScroll.Size = UDim2.new(1, -10, 1, -6)
+    ContentScroll.Position = UDim2.new(0, 5, 0, 4)
     ContentScroll.BackgroundTransparency = 1
     ContentScroll.BorderSizePixel = 0
     ContentScroll.ScrollBarThickness = 4
     ContentScroll.ScrollBarImageColor3 = Color3.fromRGB(70, 70, 70)
     ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     ContentScroll.ClipsDescendants = false
-    ContentScroll.Parent = MainFrame
+    ContentScroll.Parent = ClipFrame
 
-    -- Minimize callback defined here so ContentScroll is in scope
+    -- Minimize callback defined here so ContentScroll and ClipFrame are in scope
     MinimizeButton.MouseButton1Click:Connect(function()
         IsMinimized = not IsMinimized
         MinimizeButton.Text = IsMinimized and "[+]" or "[-]"
         if IsMinimized then
-            ContentScroll.CanvasPosition = Vector2.new(0, 0)  -- reset scroll to top so nothing bleeds through
-            ContentScroll.Visible = false
+            ContentScroll.CanvasPosition = Vector2.new(0, 0)
+            ClipFrame.Visible = false
             MainFrame.Size = UDim2.new(0, size.X, 0, 22)
         else
-            ContentScroll.Visible = true
+            ClipFrame.Visible = true
             MainFrame.Size = UDim2.new(0, size.X, 0, size.Y)
         end
     end)
