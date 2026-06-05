@@ -112,7 +112,7 @@ function ImGuiLib:CreateWindow(config)
         HeaderText.Size = UDim2.new(1, 0, 1, 0)
         HeaderText.Position = UDim2.new(0, 6, 0, 0)
         HeaderText.BackgroundTransparency = 1
-        HeaderText.Text = "[-] " .. headerName
+        HeaderText.Text = "[+] " .. headerName
         HeaderText.TextColor3 = Color3.fromRGB(200, 220, 255)
         HeaderText.Font = Enum.Font.Code
         HeaderText.TextSize = 12
@@ -123,7 +123,7 @@ function ImGuiLib:CreateWindow(config)
         Container.Size = UDim2.new(1, 0, 0, 0)
         Container.BackgroundTransparency = 1
         Container.AutomaticSize = Enum.AutomaticSize.Y
-        Container.Visible = true
+        Container.Visible = false
         Container.ZIndex = 2
         Container.Parent = ContentScroll
         
@@ -132,7 +132,7 @@ function ImGuiLib:CreateWindow(config)
         ContainerLayout.SortOrder = Enum.SortOrder.LayoutOrder
         ContainerLayout.Parent = Container
         
-        local Expanded = true
+        local Expanded = false
         HeaderFrame.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
                 Expanded = not Expanded
@@ -550,10 +550,144 @@ function ImGuiLib:CreateWindow(config)
             return ParaObj
         end
 
+
+        function HeaderObj:CreateLabel(lConfig)
+            local LabelFrame = Instance.new("Frame")
+            LabelFrame.Size = UDim2.new(1, 0, 0, 18)
+            LabelFrame.BackgroundTransparency = 1
+            LabelFrame.Parent = Container
+
+            local TextLabel = Instance.new("TextLabel")
+            TextLabel.Size = UDim2.new(1, -10, 1, 0)
+            TextLabel.Position = UDim2.new(0, 5, 0, 0)
+            TextLabel.BackgroundTransparency = 1
+            TextLabel.Text = lConfig.Text or ""
+            TextLabel.TextColor3 = lConfig.Color or Color3.fromRGB(180, 180, 180)
+            TextLabel.Font = Enum.Font.Code
+            TextLabel.TextSize = 11
+            TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+            TextLabel.Parent = LabelFrame
+
+            local LabelObj = {}
+            function LabelObj:SetText(newText)
+                TextLabel.Text = newText
+            end
+            function LabelObj:SetColor(newColor)
+                TextLabel.TextColor3 = newColor
+            end
+            return LabelObj
+        end
+
         return HeaderObj
     end
     
     return WindowObj
+end
+
+
+function ImGuiLib:Notify(config)
+    local title    = config.Title or "Notification"
+    local message  = config.Message or ""
+    local duration = config.Duration or 3
+    local nColor   = config.Color or Color3.fromRGB(30, 120, 215)
+
+    -- Find or create the notification holder
+    local holder = CoreGui:FindFirstChild("ImGui_NotifHolder")
+    if not holder then
+        holder = Instance.new("ScreenGui")
+        holder.Name = "ImGui_NotifHolder"
+        holder.ResetOnSpawn = false
+        holder.DisplayOrder = 999
+        if syn and syn.protect_gui then syn.protect_gui(holder)
+        elseif gethui then holder.Parent = gethui()
+        else holder.Parent = CoreGui end
+
+        local layout = Instance.new("UIListLayout")
+        layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+        layout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+        layout.Padding = UDim.new(0, 6)
+        layout.SortOrder = Enum.SortOrder.LayoutOrder
+        layout.Parent = holder
+
+        local padding = Instance.new("UIPadding")
+        padding.PaddingBottom = UDim.new(0, 12)
+        padding.PaddingRight = UDim.new(0, 12)
+        padding.Parent = holder
+    end
+
+    -- Build the notification frame
+    local NotifFrame = Instance.new("Frame")
+    NotifFrame.Size = UDim2.new(0, 220, 0, 48)
+    NotifFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
+    NotifFrame.BorderSizePixel = 0
+    NotifFrame.BackgroundTransparency = 0.1
+    NotifFrame.ClipsDescendants = true
+    NotifFrame.Parent = holder
+
+    -- Accent bar on the left
+    local Accent = Instance.new("Frame")
+    Accent.Size = UDim2.new(0, 3, 1, 0)
+    Accent.BackgroundColor3 = nColor
+    Accent.BorderSizePixel = 0
+    Accent.Parent = NotifFrame
+
+    -- Title
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Size = UDim2.new(1, -12, 0, 18)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 4)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title
+    TitleLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 11
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Parent = NotifFrame
+
+    -- Message
+    local MsgLabel = Instance.new("TextLabel")
+    MsgLabel.Size = UDim2.new(1, -12, 0, 18)
+    MsgLabel.Position = UDim2.new(0, 10, 0, 24)
+    MsgLabel.BackgroundTransparency = 1
+    MsgLabel.Text = message
+    MsgLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    MsgLabel.Font = Enum.Font.Code
+    MsgLabel.TextSize = 11
+    MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
+    MsgLabel.Parent = NotifFrame
+
+    -- Progress bar at the bottom
+    local ProgressBg = Instance.new("Frame")
+    ProgressBg.Size = UDim2.new(1, 0, 0, 2)
+    ProgressBg.Position = UDim2.new(0, 0, 1, -2)
+    ProgressBg.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ProgressBg.BorderSizePixel = 0
+    ProgressBg.Parent = NotifFrame
+
+    local ProgressFill = Instance.new("Frame")
+    ProgressFill.Size = UDim2.new(1, 0, 1, 0)
+    ProgressFill.BackgroundColor3 = nColor
+    ProgressFill.BorderSizePixel = 0
+    ProgressFill.Parent = ProgressBg
+
+    -- Slide in
+    NotifFrame.Position = UDim2.new(1, 10, 0, 0)
+    TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0, 0, 0, 0)
+    }):Play()
+
+    -- Progress bar drain
+    TweenService:Create(ProgressFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+        Size = UDim2.new(0, 0, 1, 0)
+    }):Play()
+
+    -- Slide out then destroy
+    task.delay(duration, function()
+        TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+            Position = UDim2.new(1, 10, 0, 0)
+        }):Play()
+        task.wait(0.3)
+        NotifFrame:Destroy()
+    end)
 end
 
 return ImGuiLib
