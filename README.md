@@ -79,3 +79,21 @@ Section:CreateButton({
     end
 })
 
+-- Create Label
+local Label = Section:CreateLabel({
+    Text = "This is a Label element.",
+    Color = Color3.fromRGB(180, 180, 180) -- optional
+})
+-- Update the label text and color at any time:
+Label:SetText("Updated text!")
+Label:SetColor(Color3.fromRGB(255, 80, 80))
+
+-- Notify
+-- (Color controls the accent bar and progress bar color)
+ImGuiLib:Notify({
+    Title = "Notification Title",
+    Message = "This is the notification message.",
+    Duration = 3,                            -- optional, default 3
+    Color = Color3.fromRGB(30, 120, 215)     -- optional
+})
+
