@@ -70,9 +70,6 @@ function ImGuiLib:CreateWindow(config)
     
     local IsMinimized = false
 
-    -- ClipFrame sits below the title bar and hard-clips everything inside it.
-    -- This stops scrolled content from bleeding over the title bar while
-    -- keeping ContentScroll.ClipsDescendants = false so dropdowns still work.
     local ClipFrame = Instance.new("Frame")
     ClipFrame.Name = "ClipFrame"
     ClipFrame.Size = UDim2.new(1, 0, 1, -22)
@@ -93,7 +90,6 @@ function ImGuiLib:CreateWindow(config)
     ContentScroll.ClipsDescendants = false
     ContentScroll.Parent = ClipFrame
 
-    -- Minimize callback defined here so ContentScroll and ClipFrame are in scope
     MinimizeButton.MouseButton1Click:Connect(function()
         IsMinimized = not IsMinimized
         MinimizeButton.Text = IsMinimized and "[+]" or "[-]"
@@ -611,7 +607,6 @@ function ImGuiLib:Notify(config)
     local duration = config.Duration or 3
     local nColor   = config.Color or Color3.fromRGB(30, 120, 215)
 
-    -- Find or create the notification holder
     local holder = CoreGui:FindFirstChild("ImGui_NotifHolder")
     if not holder then
         holder = Instance.new("ScreenGui")
@@ -635,7 +630,6 @@ function ImGuiLib:Notify(config)
         padding.Parent = holder
     end
 
-    -- Build the notification frame
     local NotifFrame = Instance.new("Frame")
     NotifFrame.Size = UDim2.new(0, 220, 0, 48)
     NotifFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 30)
@@ -644,14 +638,12 @@ function ImGuiLib:Notify(config)
     NotifFrame.ClipsDescendants = true
     NotifFrame.Parent = holder
 
-    -- Accent bar on the left
     local Accent = Instance.new("Frame")
     Accent.Size = UDim2.new(0, 3, 1, 0)
     Accent.BackgroundColor3 = nColor
     Accent.BorderSizePixel = 0
     Accent.Parent = NotifFrame
 
-    -- Title
     local TitleLabel = Instance.new("TextLabel")
     TitleLabel.Size = UDim2.new(1, -12, 0, 18)
     TitleLabel.Position = UDim2.new(0, 10, 0, 4)
@@ -663,7 +655,6 @@ function ImGuiLib:Notify(config)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = NotifFrame
 
-    -- Message
     local MsgLabel = Instance.new("TextLabel")
     MsgLabel.Size = UDim2.new(1, -12, 0, 18)
     MsgLabel.Position = UDim2.new(0, 10, 0, 24)
@@ -675,7 +666,6 @@ function ImGuiLib:Notify(config)
     MsgLabel.TextXAlignment = Enum.TextXAlignment.Left
     MsgLabel.Parent = NotifFrame
 
-    -- Progress bar at the bottom
     local ProgressBg = Instance.new("Frame")
     ProgressBg.Size = UDim2.new(1, 0, 0, 2)
     ProgressBg.Position = UDim2.new(0, 0, 1, -2)
@@ -689,18 +679,15 @@ function ImGuiLib:Notify(config)
     ProgressFill.BorderSizePixel = 0
     ProgressFill.Parent = ProgressBg
 
-    -- Slide in
     NotifFrame.Position = UDim2.new(1, 10, 0, 0)
     TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
         Position = UDim2.new(0, 0, 0, 0)
     }):Play()
 
-    -- Progress bar drain
     TweenService:Create(ProgressFill, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
         Size = UDim2.new(0, 0, 1, 0)
     }):Play()
 
-    -- Slide out then destroy
     task.delay(duration, function()
         TweenService:Create(NotifFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
             Position = UDim2.new(1, 10, 0, 0)
