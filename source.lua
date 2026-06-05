@@ -69,12 +69,6 @@ function ImGuiLib:CreateWindow(config)
     MinimizeButton.Parent = TitleBar
     
     local IsMinimized = false
-    MinimizeButton.MouseButton1Click:Connect(function()
-        IsMinimized = not IsMinimized
-        MainFrame.Size = IsMinimized and UDim2.new(0, size.X, 0, 22) or UDim2.new(0, size.X, 0, size.Y)
-        MinimizeButton.Text = IsMinimized and "[+]" or "[-]"
-        ContentScroll.Visible = not IsMinimized
-    end)
 
     local ContentScroll = Instance.new("ScrollingFrame")
     ContentScroll.Size = UDim2.new(1, -10, 1, -28)
@@ -86,6 +80,20 @@ function ImGuiLib:CreateWindow(config)
     ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     ContentScroll.ClipsDescendants = false
     ContentScroll.Parent = MainFrame
+
+    -- Minimize callback defined here so ContentScroll is in scope
+    MinimizeButton.MouseButton1Click:Connect(function()
+        IsMinimized = not IsMinimized
+        MinimizeButton.Text = IsMinimized and "[+]" or "[-]"
+        if IsMinimized then
+            ContentScroll.CanvasPosition = Vector2.new(0, 0)  -- reset scroll to top so nothing bleeds through
+            ContentScroll.Visible = false
+            MainFrame.Size = UDim2.new(0, size.X, 0, 22)
+        else
+            ContentScroll.Visible = true
+            MainFrame.Size = UDim2.new(0, size.X, 0, size.Y)
+        end
+    end)
     
     local Layout = Instance.new("UIListLayout")
     Layout.Padding = UDim.new(0, 5)
