@@ -69,6 +69,34 @@ function ImGuiLib:CreateWindow(config)
     MinimizeButton.Parent = TitleBar
     
     local IsMinimized = false
+    local IsTweening = false
+    local currentOpacity = 0  -- 0 = fully opaque, 1 = fully transparent
+
+    -- Opacity slider: right-click title bar and drag horizontally to adjust
+    local OpacityDragging = false
+    local OpacityDragStartX = 0
+    local OpacityDragStartVal = 0
+
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            OpacityDragging = true
+            OpacityDragStartX = input.Position.X
+            OpacityDragStartVal = currentOpacity
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if OpacityDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = (input.Position.X - OpacityDragStartX) / 200
+            currentOpacity = math.clamp(OpacityDragStartVal + delta, 0, 0.9)
+            MainFrame.BackgroundTransparency = currentOpacity
+            TitleBar.BackgroundTransparency = currentOpacity
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton2 then
+            OpacityDragging = false
+        end
+    end)
 
     -- ClipFrame sits below the title bar and hard-clips everything inside it.
     -- This stops scrolled content from bleeding over the title bar while
@@ -93,18 +121,37 @@ function ImGuiLib:CreateWindow(config)
     ContentScroll.ClipsDescendants = false
     ContentScroll.Parent = ClipFrame
 
-    -- Minimize callback defined here so ContentScroll and ClipFrame are in scope
-    MinimizeButton.MouseButton1Click:Connect(function()
-        IsMinimized = not IsMinimized
-        MinimizeButton.Text = IsMinimized and "[+]" or "[-]"
-        if IsMinimized then
+    -- Smooth minimize: tween height instead of snapping
+    local function setMinimized(minimized)
+        if IsTweening then return end
+        IsTweening = true
+        IsMinimized = minimized
+        MinimizeButton.Text = minimized and "[+]" or "[-]"
+
+        if minimized then
             ContentScroll.CanvasPosition = Vector2.new(0, 0)
-            ClipFrame.Visible = false
-            MainFrame.Size = UDim2.new(0, size.X, 0, 22)
+            local tween = TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, size.X, 0, 22)
+            })
+            tween:Play()
+            tween.Completed:Connect(function()
+                ClipFrame.Visible = false
+                IsTweening = false
+            end)
         else
             ClipFrame.Visible = true
-            MainFrame.Size = UDim2.new(0, size.X, 0, size.Y)
+            local tween = TweenService:Create(MainFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, size.X, 0, size.Y)
+            })
+            tween:Play()
+            tween.Completed:Connect(function()
+                IsTweening = false
+            end)
         end
+    end
+
+    MinimizeButton.MouseButton1Click:Connect(function()
+        setMinimized(not IsMinimized)
     end)
     
     local Layout = Instance.new("UIListLayout")
