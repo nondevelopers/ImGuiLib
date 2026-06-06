@@ -19,7 +19,9 @@ local Locations = {
     { Name = "Barn", Cords = Vector3.new(-1017.38, 1076.87, 397.64) },
     { Name = "China House thing", Cords = Vector3.new(-994.29, 1084.72, -198.58) },
     { Name = "Special Guns", Cords = Vector3.new(-137.43, 1197.38, -738.71) },
-    { Name = "Factory", Cords = Vector3.new(-1153.58, 1061.36, -97.44) }
+    { Name = "Factory", Cords = Vector3.new(-1153.58, 1061.36, -97.44) },
+    { Name = "Free P90 and Luger", Cords = Vector3.new(-21.78, 1035.00, 128.97) },
+    { Name = "Flare Gun", Cords = Vector3.new(-1340.24, 1006.67, -444.25) }
 }
 
 local LocationNames = {}
