@@ -4,7 +4,7 @@ Ui liberay for roblox, made with claude ai.
 ## Installation
 ```lua
 -- Boot
-local ImGuiLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/xqzxa/xqzMenu/main/source.lua"))()
+local ImGuiLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/nondevelopers/ImGuiLib/main/source.luau"))()
 
 -- Create Window
 local Window = ImGuiLib:CreateWindow({
